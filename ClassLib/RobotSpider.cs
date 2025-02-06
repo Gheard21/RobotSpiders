@@ -18,8 +18,6 @@ public class RobotSpider() : IRobotSpider
 
     public void ProcessCommands(string commands)
     {
-        var splitCommands = commands.ToCharArray();
-
         var commandActions = new Dictionary<char, Action>
         {
             { 'F', MoveForward },
