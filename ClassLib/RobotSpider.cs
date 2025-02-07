@@ -9,12 +9,34 @@ public class RobotSpider() : IRobotSpider
     public Point Position { get; private set; }
     public Direction Direction { get; set; }
 
+    /// <summary>
+    /// Initializes the RobotSpider with the specified position and direction.
+    /// </summary>
+    /// <param name="init">
+    /// A string containing the initial position and direction in the format "X Y Direction".
+    /// Example: "1 2 Up".
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the initialization string is invalid or cannot be parsed.
+    /// </exception>
+
     public void ProcessInit(string init)
     {
         var args = init.Split(' ');
         Position = new Point(int.Parse(args[0]), int.Parse(args[1]));
         Direction = Enum.Parse<Direction>(args[2]);
     }
+
+    /// <summary>
+    /// Processes a string of commands to control the RobotSpider.
+    /// </summary>
+    /// <param name="commands">
+    /// A string containing the commands to be processed. Each character represents a command:
+    /// 'F' for MoveForward, 'L' for TurnLeft, and 'R' for TurnRight.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when an invalid command is encountered in the command string.
+    /// </exception>
 
     public void ProcessCommands(string commands)
     {
