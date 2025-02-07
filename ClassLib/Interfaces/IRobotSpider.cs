@@ -2,6 +2,8 @@ namespace RobotSpiders.ClassLib.Interfaces;
 
 public interface IRobotSpider
 {
-    public void ProcessInit(string init);
-    public void ProcessCommands(string commands);
+    public RobotSpider InitializePosition(string position);
+    public RobotSpider InitializeDirection(string direction);
+    public RobotSpider InitializeCommands(string commands);
+    public void ExecuteCommands();
 }

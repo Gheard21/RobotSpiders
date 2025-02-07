@@ -1,4 +1,5 @@
-﻿using RobotSpiders.ClassLib;
+﻿using System.Drawing;
+using RobotSpiders.ClassLib;
 using RobotSpiders.ClassLib.Enums;
 
 namespace RobotSpiders.ClassLibTests;
@@ -6,114 +7,154 @@ namespace RobotSpiders.ClassLibTests;
 public class RobotSpiderTests
 {
     [Fact]
-    public void RobotSpider_OnInstantiation_CoordinatesAndDirectionSetCorrectly()
+    public void InitializePosition_WithValidPositionString_SetsPosition()
     {
         // Arrange
-        var initString = "1 2 Left";
         var robotSpider = new RobotSpider();
+        var position = "1 2";
 
         // Act
-        robotSpider.ProcessInit(initString);
+        robotSpider.InitializePosition(position);
 
         // Assert
-        Assert.Equal(1, robotSpider.Position.X);
-        Assert.Equal(2, robotSpider.Position.Y);
+        Assert.Equal(new Point(1, 2), robotSpider.Position);
     }
 
     [Fact]
-    public void RobotSpider_TurnLeftWhenLeft_SetsDirectionToDown()
+    public void InitializePosition_WithInvalidPositionString_ThrowsArgumentException()
     {
         // Arrange
-        var initString = "1 2 Left";
-        var commandString = "L";
         var robotSpider = new RobotSpider();
-
+        var position = "1";
 
         // Act
-        robotSpider.ProcessInit(initString);
-        robotSpider.ProcessCommands(commandString);
+        void action() => robotSpider.InitializePosition(position);
 
         // Assert
-        Assert.Equal(Direction.Down, robotSpider.Direction);
+        Assert.Throws<ArgumentException>(action);
     }
 
     [Fact]
-    public void RobotSpider_TurnRightWhenLeft_SetsDirectionToUp()
+    public void InitializePosition_WithInvalidPositionStringFormat_ThrowsArgumentException()
     {
         // Arrange
-        var initString = "1 2 Left";
-        var commandString = "R";
         var robotSpider = new RobotSpider();
+        var position = "1 a";
 
         // Act
-        robotSpider.ProcessInit(initString);
-        robotSpider.ProcessCommands(commandString);
+        void action() => robotSpider.InitializePosition(position);
+
+        // Assert
+        Assert.Throws<ArgumentException>(action);
+    }
+
+    [Fact]
+    public void InitializeDirection_WithValidDirectionString_SetsDirection()
+    {
+        // Arrange
+        var robotSpider = new RobotSpider();
+        var direction = "Up";
+
+        // Act
+        robotSpider.InitializeDirection(direction);
 
         // Assert
         Assert.Equal(Direction.Up, robotSpider.Direction);
     }
 
     [Fact]
-    public void RobotSpider_MoveForwardWhenLeft_DecrementsXCoordinate()
+    public void InitializeDirection_WithInvalidDirectionString_ThrowsArgumentException()
     {
         // Arrange
-        var initString = "1 2 Left";
-        var commandString = "F";
         var robotSpider = new RobotSpider();
+        var direction = "Invalid";
 
         // Act
-        robotSpider.ProcessInit(initString);
-        robotSpider.ProcessCommands(commandString);
+        void action() => robotSpider.InitializeDirection(direction);
 
         // Assert
-        Assert.Equal(0, robotSpider.Position.X);
+        Assert.Throws<ArgumentException>(action);
     }
 
     [Fact]
-    public void RobotSpider_MoveForwardWhenRight_IncrementsXCoordinate()
+    public void InitializeCommands_WithInvalidCommandsString_ThrowsArgumentException()
     {
         // Arrange
-        var initString = "1 2 Right";
-        var commandString = "F";
         var robotSpider = new RobotSpider();
+        var commands = "LRFZ";
 
         // Act
-        robotSpider.ProcessInit(initString);
-        robotSpider.ProcessCommands(commandString);
+        void action() => robotSpider.InitializeCommands(commands);
 
         // Assert
-        Assert.Equal(2, robotSpider.Position.X);
+        Assert.Throws<ArgumentException>(action);
     }
 
     [Fact]
-    public void RobotSpider_MoveForwardWhenUp_IncrementsYCoordinate()
+    public void ExecuteCommands_TurnsLeftDoesNotMove()
     {
         // Arrange
-        var initString = "1 2 Up";
-        var commandString = "F";
-        var robotSpider = new RobotSpider();
+        var robotSpider = new RobotSpider()
+            .InitializePosition("1 1")
+            .InitializeDirection("Up")
+            .InitializeCommands("L");
 
         // Act
-        robotSpider.ProcessInit(initString);
-        robotSpider.ProcessCommands(commandString);
+        robotSpider.ExecuteCommands();
 
         // Assert
-        Assert.Equal(3, robotSpider.Position.Y);
+        Assert.Equal(new Point(1, 1), robotSpider.Position);
+        Assert.Equal(Direction.Left, robotSpider.Direction);
     }
 
     [Fact]
-    public void RobotSpider_MoveForwardWhenDown_DecrementsYCoordinate()
+    public void ExecuteCommands_TurnsRightDoesNotMove()
     {
         // Arrange
-        var initString = "1 2 Down";
-        var commandString = "F";
-        var robotSpider = new RobotSpider();
+        var robotSpider = new RobotSpider()
+            .InitializePosition("1 1")
+            .InitializeDirection("Up")
+            .InitializeCommands("R");
 
         // Act
-        robotSpider.ProcessInit(initString);
-        robotSpider.ProcessCommands(commandString);
+        robotSpider.ExecuteCommands();
 
         // Assert
-        Assert.Equal(1, robotSpider.Position.Y);
+        Assert.Equal(new Point(1, 1), robotSpider.Position);
+        Assert.Equal(Direction.Right, robotSpider.Direction);
+    }
+
+    [Fact]
+    public void ExecuteCommands_MovesForward()
+    {
+        // Arrange
+        var robotSpider = new RobotSpider()
+            .InitializePosition("1 1")
+            .InitializeDirection("Up")
+            .InitializeCommands("F");
+
+        // Act
+        robotSpider.ExecuteCommands();
+
+        // Assert
+        Assert.Equal(new Point(1, 2), robotSpider.Position);
+        Assert.Equal(Direction.Up, robotSpider.Direction);
+    }
+
+    [Fact]
+    public void ExecuteCommands_ExecutesCommandsCorrectly()
+    {
+        // Arrange
+        var robotSpider = new RobotSpider()
+            .InitializePosition("1 1")
+            .InitializeDirection("Up")
+            .InitializeCommands("FLF");
+
+        // Act
+        robotSpider.ExecuteCommands();
+
+        // Assert
+        Assert.Equal(new Point(0, 2), robotSpider.Position);
+        Assert.Equal(Direction.Left, robotSpider.Direction);
     }
 }

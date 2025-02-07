@@ -4,75 +4,77 @@ using RobotSpiders.ClassLib.Interfaces;
 
 namespace RobotSpiders.ClassLib;
 
-public class RobotSpider() : IRobotSpider
+public class RobotSpider : IRobotSpider
 {
+    private string _commands = default!;
+    private readonly Dictionary<char, Action> _commandActions;
+    private readonly static Dictionary<Direction, Point> _positionOffsets = new()
+    {
+        { Direction.Up, new Point(0, 1) },
+        { Direction.Right, new Point(1, 0) },
+        { Direction.Down, new Point(0 -1) },
+        { Direction.Left, new Point(-1, 0) }
+    };
+
     public Point Position { get; private set; }
-    public Direction Direction { get; set; }
+    public Direction Direction { get; private set; }
 
-    /// <summary>
-    /// Initializes the RobotSpider with the specified position and direction.
-    /// </summary>
-    /// <param name="init">
-    /// A string containing the initial position and direction in the format "X Y Direction".
-    /// Example: "1 2 Up".
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the initialization string is invalid or cannot be parsed.
-    /// </exception>
-
-    public void ProcessInit(string init)
+    public RobotSpider()
     {
-        var args = init.Split(' ');
-        Position = new Point(int.Parse(args[0]), int.Parse(args[1]));
-        Direction = Enum.Parse<Direction>(args[2]);
-    }
-
-    /// <summary>
-    /// Processes a string of commands to control the RobotSpider.
-    /// </summary>
-    /// <param name="commands">
-    /// A string containing the commands to be processed. Each character represents a command:
-    /// 'F' for MoveForward, 'L' for TurnLeft, and 'R' for TurnRight.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when an invalid command is encountered in the command string.
-    /// </exception>
-
-    public void ProcessCommands(string commands)
-    {
-        var commandActions = new Dictionary<char, Action>
+        _commandActions = new Dictionary<char, Action>
         {
             { 'F', MoveForward },
             { 'L', TurnLeft },
             { 'R', TurnRight }
         };
+    }
 
+    public RobotSpider InitializeDirection(string direction)
+    {
+        if (!Enum.TryParse(direction, out Direction parsedDirection))
+            throw new ArgumentException("Invalid direction");
+
+        Direction = parsedDirection;
+        return this;
+    }
+
+    public RobotSpider InitializePosition(string position)
+    {
+        var splitPosition = position.Split(' ');
+
+        if (splitPosition.Length != 2)
+            throw new ArgumentException("Invalid position format");
+
+        if (!int.TryParse(splitPosition[0], out var x) || !int.TryParse(splitPosition[1], out var y))
+            throw new ArgumentException("Invalid position format");
+
+        Position = new Point(x, y);
+        return this;
+    }
+
+    public RobotSpider InitializeCommands(string commands)
+    {
         foreach (var command in commands)
-        {
-            if (commandActions.TryGetValue(command, out var action))
-                action();
-            else
-                throw new ArgumentException($"Invalid command: {command}");
-        }
+            if (!_commandActions.ContainsKey(command))
+                throw new ArgumentException("Invalid command");
+
+        _commands = commands;
+        return this;
     }
 
     private void MoveForward()
     {
-        var directionOffsets = new Dictionary<Direction, Point>
-        {
-            { Direction.Left, new Point(-1, 0) },
-            { Direction.Right, new Point(1, 0) },
-            { Direction.Up, new Point(0, 1) },
-            { Direction.Down, new Point(0, -1) }
-        };
-
-        var offset = directionOffsets[Direction];
-        Position = new Point(Position.X + offset.X, Position.Y + offset.Y);
+        var positionOffset = _positionOffsets[Direction];
+        Position = new Point(Position.X + positionOffset.X, Position.Y + positionOffset.Y);
     }
 
-    private void TurnLeft() =>
-        Direction = (Direction)(((int)Direction + 3) % 4);
+    private void TurnLeft() => Direction = Direction == Direction.Up ? Direction.Left : Direction - 1;
 
-    private void TurnRight() => 
-        Direction = (Direction)(((int)Direction + 1) % 4);
+    private void TurnRight() => Direction = Direction == Direction.Left ? Direction.Up : Direction + 1;
+
+    public void ExecuteCommands()
+    {
+        foreach (var command in _commands)
+            _commandActions[command]();
+    }
 }
