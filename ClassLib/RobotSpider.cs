@@ -16,6 +16,7 @@ public class RobotSpider : IRobotSpider
         { Direction.Left, new Point(-1, 0) }
     };
 
+    public Guid BotId { get; set; } = Guid.NewGuid();
     public Point Position { get; private set; }
     public Direction Direction { get; private set; }
 
@@ -77,4 +78,16 @@ public class RobotSpider : IRobotSpider
         foreach (var command in _commands)
             _commandActions[command]();
     }
+
+    public void PrintPosition()
+    {
+        Console.WriteLine("{0} {1} {2}", Position.X, Position.Y, Direction);
+    }
+
+    public void PrintCommandsExecuted()
+    {
+        Console.WriteLine("Commands executed: {0}", _commands);
+    }
+
+    public Guid GetBotId() => BotId;
 }

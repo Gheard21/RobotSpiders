@@ -6,4 +6,7 @@ public interface IRobotSpider
     public RobotSpider InitializeDirection(string direction);
     public RobotSpider InitializeCommands(string commands);
     public void ExecuteCommands();
+    public void PrintPosition();
+    public void PrintCommandsExecuted();
+    public Guid GetBotId();
 }
